@@ -188,7 +188,9 @@ def body_text(page: RawPage) -> str:
         if prev is None:
             sep = "\n\n" if parts else ""
         elif _same_row(prev.y0, prev.x1, block.y0, block.x0):
-            sep = _column_separator(prev.lines[-1].text, block.x0 - prev.x1)
+            # Separate blocks side by side are always separate columns; the gap
+            # threshold only matters for justified-text pieces inside one block.
+            sep = _column_separator(prev.lines[-1].text, gap=float("inf"))
         elif block.y0 - prev.y1 < SOFT_WRAP_GAP:
             sep = "\n"
         else:

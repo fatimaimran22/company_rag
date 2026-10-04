@@ -37,3 +37,20 @@ DOCUMENTS: dict[str, DocConfig] = {
 def config_for(pdf_path: Path) -> DocConfig:
     """Registered config, or a safe default for a PDF nobody has registered yet."""
     return DOCUMENTS.get(pdf_path.name, DocConfig(pdf_path.stem, "plain"))
+
+
+# --- Phase 3: chunking experiment (all overridable from the command line) ---
+CHUNK_SIZE = 500  # fixed + recursive: target characters per chunk
+CHUNK_OVERLAP = 50  # fixed only: characters shared by consecutive windows
+SECTION_MAX_CHARS = 1200  # section: a whole section up to this size stays one chunk
+TABLE_MAX_CHARS = 1000  # all: a table up to this size is never split; larger ones split by rows
+
+CHUNK_STRATEGIES = ["fixed", "recursive", "section"]
+PRIMARY_STRATEGY = "section"  # chosen after the Phase 3 comparison; the others are kept for demos
+
+
+def chunks_file(strategy: str) -> Path:
+    return PROCESSED_DIR / f"chunks_{strategy}.jsonl"
+
+
+PRIMARY_CHUNKS_FILE = chunks_file(PRIMARY_STRATEGY)
