@@ -1,7 +1,7 @@
-"""Phase 2 entry point: PDFs in data/raw/ -> cleaned page records in data/processed/.
+"""Extraction + cleaning command: PDFs in data/raw/ -> cleaned page records in data/processed/.
 
 Run from the project root:
-    .venv/bin/python -m ingestion.extract
+    .venv/bin/python -m extraction.extract
 
 Outputs (one record per PDF page, 1-based page numbers):
     data/processed/pages.jsonl      cleaned text + metadata  {"doc", "page", "text", "metadata"}
@@ -12,7 +12,7 @@ Outputs (one record per PDF page, 1-based page numbers):
 import json
 from pathlib import Path
 
-from .config import (
+from config import (
     DOCUMENTS_FILE,
     PAGES_FILE,
     PROCESSED_DIR,
@@ -23,7 +23,7 @@ from .config import (
 )
 from .cover_page import parse_cover, parse_header, render_cover_text
 from .pdf_reader import body_text, read_pdf
-from .text_cleaning import clean_text
+from cleaning.text_cleaning import clean_text
 
 # Document-level fields copied onto every page record (small, useful for citing/filtering later).
 _PAGE_LEVEL_FIELDS = ["title", "document_id", "version", "effective_date", "issued_by", "issued_to"]

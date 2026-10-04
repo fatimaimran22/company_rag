@@ -1,9 +1,9 @@
 """Compare the chunking strategies side by side.
 
-Run from the project root (after ingestion.chunk):
-    .venv/bin/python -m ingestion.compare_chunks
-    .venv/bin/python -m ingestion.compare_chunks --doc byom --section "9. Process Flow"
-    .venv/bin/python -m ingestion.compare_chunks --stats-only
+Run from the project root (after chunking.chunk):
+    .venv/bin/python -m chunking.compare
+    .venv/bin/python -m chunking.compare --doc byom --section "9. Process Flow"
+    .venv/bin/python -m chunking.compare --stats-only
 
 Prints:
   1. statistics per strategy
@@ -16,11 +16,11 @@ Prints:
 import argparse
 import statistics
 
-from . import config
-from .chunking.document import load_documents, regions, table_units
-from .chunking.fixed import fixed_windows
-from .chunking.outline import build_outline
-from .inspect_chunks import load_chunks, page_range
+import config
+from .document import load_documents, regions, table_units
+from .fixed import fixed_windows
+from .outline import build_outline
+from .inspect import load_chunks, page_range
 
 RULE = "=" * 100
 

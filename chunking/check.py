@@ -1,8 +1,8 @@
 """Check that the primary chunk set is ready to embed.
 
-Run from the project root (after ingestion.chunk):
-    .venv/bin/python -m ingestion.check_chunks
-    .venv/bin/python -m ingestion.check_chunks --strategy recursive
+Run from the project root (after chunking.chunk):
+    .venv/bin/python -m chunking.check
+    .venv/bin/python -m chunking.check --strategy recursive
 
 Errors are things that must be fixed before embedding; notes are things
 worth knowing about but not necessarily wrong.
@@ -11,9 +11,9 @@ worth knowing about but not necessarily wrong.
 import argparse
 import re
 
-from . import config
-from .chunking.context import context_line
-from .inspect_chunks import load_chunks
+import config
+from .context import context_line
+from .inspect import load_chunks
 
 REQUIRED = ["chunk_id", "doc", "chunking_strategy", "section", "page_start", "page_end", "text", "embedding_text"]
 REQUIRED_META = ["source_file", "title", "document_id", "version", "effective_date", "pages", "has_table", "tables"]

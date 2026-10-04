@@ -1,8 +1,8 @@
-"""Phase 3 entry point: pages.jsonl -> one chunks_<strategy>.jsonl per strategy.
+"""Chunking command: pages.jsonl -> one chunks_<strategy>.jsonl per strategy.
 
 Run from the project root:
-    .venv/bin/python -m ingestion.chunk
-    .venv/bin/python -m ingestion.chunk --chunk-size 800 --overlap 100 --strategies fixed recursive
+    .venv/bin/python -m chunking.chunk
+    .venv/bin/python -m chunking.chunk --chunk-size 800 --overlap 100 --strategies fixed recursive
 
 Reads data/processed/pages.jsonl (never modifies it) and writes
 data/processed/chunks_fixed.jsonl, chunks_recursive.jsonl, chunks_section.jsonl.
@@ -12,11 +12,11 @@ import argparse
 import json
 import re
 
-from . import config
-from .chunking import fixed, recursive, section
-from .chunking.context import embedding_text, table_info
-from .chunking.document import DocStream, Unit, load_documents
-from .chunking.outline import build_outline
+import config
+from . import fixed, recursive, section
+from .context import embedding_text, table_info
+from .document import DocStream, Unit, load_documents
+from .outline import build_outline
 
 
 # Document-level metadata carried on every chunk.
@@ -81,7 +81,7 @@ def main() -> None:
     args = parser.parse_args()
 
     if not config.PAGES_FILE.exists():
-        raise SystemExit("pages.jsonl not found. Run Phase 2 first: .venv/bin/python -m ingestion.extract")
+        raise SystemExit("pages.jsonl not found. Run extraction first: .venv/bin/python -m extraction.extract")
     streams = load_documents(config.PAGES_FILE)
 
     params_by_strategy = {
@@ -100,8 +100,8 @@ def main() -> None:
                 f.write(json.dumps(r, ensure_ascii=False) + "\n")
         print(f"{strategy:<10} {len(records):>3} chunks -> {out.relative_to(config.PROJECT_ROOT)}   {params}")
 
-    print("\nInspect:  .venv/bin/python -m ingestion.inspect_chunks --strategy section --doc byom")
-    print("Compare:  .venv/bin/python -m ingestion.compare_chunks")
+    print("\nInspect:  .venv/bin/python -m chunking.inspect --strategy section --doc byom")
+    print("Compare:  .venv/bin/python -m chunking.compare")
 
 
 if __name__ == "__main__":

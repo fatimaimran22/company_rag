@@ -16,7 +16,7 @@ as the "Notes: 1. ... 2. ... 3. ..." list inside Test Project section 3.2.1.
 import re
 from dataclasses import dataclass, field
 
-from ..config import DOCUMENTS
+from config import DOCUMENTS
 from .document import DocStream, _lines_with_offsets
 
 TITLE_MAX = 70  # longer heading lines are labelled by number only ("4.1")

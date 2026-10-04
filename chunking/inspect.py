@@ -1,11 +1,11 @@
 """Look at generated chunks from the terminal.
 
 Examples (run from the project root):
-    .venv/bin/python -m ingestion.inspect_chunks --strategy fixed --doc byom
-    .venv/bin/python -m ingestion.inspect_chunks --strategy section --doc test --section 3.2
-    .venv/bin/python -m ingestion.inspect_chunks --strategy recursive --doc working --page 3
-    .venv/bin/python -m ingestion.inspect_chunks --strategy section --doc byom --list   # one line per chunk
-    .venv/bin/python -m ingestion.inspect_chunks --id section-byom-allowance-005 --embedding --meta
+    .venv/bin/python -m chunking.inspect --strategy fixed --doc byom
+    .venv/bin/python -m chunking.inspect --strategy section --doc test --section 3.2
+    .venv/bin/python -m chunking.inspect --strategy recursive --doc working --page 3
+    .venv/bin/python -m chunking.inspect --strategy section --doc byom --list   # one line per chunk
+    .venv/bin/python -m chunking.inspect --id section-byom-allowance-005 --embedding --meta
 
 --doc and --section match case-insensitively on any part of the name.
 """
@@ -13,13 +13,13 @@ Examples (run from the project root):
 import argparse
 import json
 
-from . import config
+import config
 
 
 def load_chunks(strategy: str) -> list[dict]:
     path = config.chunks_file(strategy)
     if not path.exists():
-        raise SystemExit(f"{path.name} not found. Run: .venv/bin/python -m ingestion.chunk")
+        raise SystemExit(f"{path.name} not found. Run: .venv/bin/python -m chunking.chunk")
     with path.open(encoding="utf-8") as f:
         return [json.loads(line) for line in f if line.strip()]
 
@@ -39,7 +39,7 @@ def header_line(chunk: dict) -> str:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Inspect chunks produced by ingestion.chunk.")
+    parser = argparse.ArgumentParser(description="Inspect chunks produced by chunking.chunk.")
     parser.add_argument("--strategy", choices=config.CHUNK_STRATEGIES + ["all"], default="all")
     parser.add_argument("--doc", help="document name (substring, case-insensitive)")
     parser.add_argument("--section", help="section breadcrumb (substring, case-insensitive)")

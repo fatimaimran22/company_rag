@@ -1,11 +1,11 @@
 """Look at stored embeddings and compare two of them, from the terminal.
 
-Examples (run from the project root, after ingestion.embed):
-    .venv/bin/python -m ingestion.inspect_embeddings                    # list all vectors
-    .venv/bin/python -m ingestion.inspect_embeddings --id section-byom-allowance-005
-    .venv/bin/python -m ingestion.inspect_embeddings --id section-byom-allowance-005 --full
-    .venv/bin/python -m ingestion.inspect_embeddings --compare section-byom-allowance-005 section-byom-allowance-012
-    .venv/bin/python -m ingestion.inspect_embeddings --demo             # a related and an unrelated pair
+Examples (run from the project root, after embedding.embed):
+    .venv/bin/python -m embedding.inspect                    # list all vectors
+    .venv/bin/python -m embedding.inspect --id section-byom-allowance-005
+    .venv/bin/python -m embedding.inspect --id section-byom-allowance-005 --full
+    .venv/bin/python -m embedding.inspect --compare section-byom-allowance-005 section-byom-allowance-012
+    .venv/bin/python -m embedding.inspect --demo             # a related and an unrelated pair
 
 Reads data/processed/embeddings.jsonl only; no model is loaded.
 """
@@ -15,7 +15,7 @@ import json
 
 import numpy as np
 
-from . import config
+import config
 from .embeddings import cosine_similarity
 
 # Pairs used by --demo: same topic (allowance amount / how the allowance is set),
@@ -26,7 +26,7 @@ UNRELATED_PAIR = ("section-byom-allowance-005", "section-working-hours-policy-00
 
 def load_embeddings() -> dict[str, dict]:
     if not config.EMBEDDINGS_FILE.exists():
-        raise SystemExit("embeddings.jsonl not found. Run: .venv/bin/python -m ingestion.embed")
+        raise SystemExit("embeddings.jsonl not found. Run: .venv/bin/python -m embedding.embed")
     with config.EMBEDDINGS_FILE.open(encoding="utf-8") as f:
         records = [json.loads(line) for line in f if line.strip()]
     return {r["chunk_id"]: r for r in records}

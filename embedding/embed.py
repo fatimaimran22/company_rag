@@ -1,7 +1,7 @@
-"""Phase 4 entry point: primary chunks -> embedding vectors -> embeddings.jsonl.
+"""Embedding command: primary chunks -> embedding vectors -> embeddings.jsonl.
 
 Run from the project root:
-    .venv/bin/python -m ingestion.embed
+    .venv/bin/python -m embedding.embed
 
 Reads data/processed/chunks_section.jsonl (read-only), embeds each chunk's
 `embedding_text`, and writes data/processed/embeddings.jsonl.
@@ -12,7 +12,7 @@ import json
 
 import numpy as np
 
-from . import config
+import config
 from .embeddings import embed_texts, load_model, token_info
 
 RULE = "=" * 90
@@ -40,6 +40,9 @@ def main() -> None:
     model = load_model(config.EMBEDDING_MODEL)
     matrix = embed_texts(model, texts, config.EMBEDDING_BATCH_SIZE)
     dim = model.get_embedding_dimension()
+    if dim != config.EMBEDDING_DIM:
+        raise SystemExit(f"{config.EMBEDDING_MODEL} produces {dim}-d vectors but "
+                         f"config.EMBEDDING_DIM is {config.EMBEDDING_DIM}; update config.py")
     tokens = [token_info(model, t) for t in texts]
 
     print(RULE + "\nEMBEDDING RUN\n" + RULE)

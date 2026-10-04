@@ -17,7 +17,7 @@ PAGE_SEPARATOR = "\n\n"  # pages are joined like paragraphs
 
 @dataclass
 class PageSpan:
-    page: int  # 1-based PDF page number from Phase 2
+    page: int  # 1-based PDF page number from pages.jsonl
     start: int
     end: int
     page_type: str  # "cover" or "content"
@@ -28,7 +28,7 @@ class DocStream:
     doc: str
     text: str
     pages: list[PageSpan]
-    metadata: dict  # document-level fields copied from the Phase 2 page records
+    metadata: dict  # document-level fields copied from the pages.jsonl records
 
     @property
     def cover(self) -> PageSpan | None:
@@ -48,7 +48,7 @@ class DocStream:
 
 
 def load_documents(pages_file: Path) -> list[DocStream]:
-    """Group Phase 2 page records by document and build one DocStream per document."""
+    """Group pages.jsonl records by document and build one DocStream per document."""
     by_doc: dict[str, list[dict]] = {}
     with pages_file.open(encoding="utf-8") as f:
         for line in f:
@@ -108,7 +108,7 @@ def regions(stream: DocStream, start: int, end: int) -> list[Unit]:
     """Split [start, end) into alternating prose and table units.
 
     A table is a run of consecutive lines starting with "|" (the Markdown tables
-    written in Phase 2). Tables are returned whole so no strategy cuts through one.
+    written by extraction). Tables are returned whole so no strategy cuts through one.
     """
     out: list[Unit] = []
     cur_start, cur_is_table = start, None

@@ -1,6 +1,6 @@
 """Everything that talks to PyMuPDF or reasons about page geometry lives here.
 
-The rest of the ingestion code only sees plain Python objects (RawPage,
+The rest of the pipeline code only sees plain Python objects (RawPage,
 Block, Table) and strings, so it can be read without knowing PyMuPDF.
 
 Units: PDF points (1/72 inch), origin at the top-left, y grows downwards.
