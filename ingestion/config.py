@@ -54,3 +54,9 @@ def chunks_file(strategy: str) -> Path:
 
 
 PRIMARY_CHUNKS_FILE = chunks_file(PRIMARY_STRATEGY)
+
+
+# --- Phase 4: embeddings ---
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
+EMBEDDING_BATCH_SIZE = 16
+EMBEDDINGS_FILE = PROCESSED_DIR / "embeddings.jsonl"
