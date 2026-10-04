@@ -17,9 +17,9 @@ PDF files (data/raw/)
         ↓
   embedding/    chunks -> 384-d vectors (sentence-transformers/all-MiniLM-L6-v2)
         ↓
-  storage/      vector store (Chroma)                         - not built yet
+  storage/      persistent Chroma vector database (data/chroma/), filled with the existing vectors
         ↓
-  retrieval/    question -> most similar chunks               - not built yet
+  retrieval/    question -> most similar chunks: brute force (every chunk) or Chroma
         ↓
   evaluation/   measure retrieval / answer quality            - not built yet
         ↓
@@ -34,16 +34,18 @@ company_rag/
 ├── requirements.txt
 ├── data/
 │   ├── raw/             source PDFs (git-ignored)
-│   └── processed/       everything the pipeline generates (git-ignored)
+│   ├── processed/       everything the pipeline generates (git-ignored)
+│   └── chroma/          persistent Chroma database (git-ignored)
 ├── extraction/          pdf_reader.py, cover_page.py, extract.py, inspect.py
 ├── cleaning/            text_cleaning.py, inspect.py
 ├── chunking/            document.py, outline.py, fixed.py, recursive.py, section.py,
 │                        context.py, chunk.py, check.py, compare.py, inspect.py
 ├── embedding/           embeddings.py, embed.py, inspect.py
-├── storage/             (next)
-├── retrieval/           (next)
+├── storage/             chroma_store.py, ingest_chroma.py
+├── retrieval/           retrieve.py (brute force), chroma_retrieve.py
 ├── evaluation/          (later)
-└── rag/                 (later)
+├── rag/                 (later)
+└── tests/               test_retrieval.py, test_chroma.py
 ```
 
 Each stage folder's `__init__.py` describes its files, inputs and outputs.
@@ -70,6 +72,9 @@ packages and `config.py` are importable.
 | Extraction + cleaning | `.venv/bin/python -m extraction.extract` | `raw_pages.jsonl`, `documents.json`, `pages.jsonl` |
 | Chunking | `.venv/bin/python -m chunking.chunk` | `chunks_fixed.jsonl`, `chunks_recursive.jsonl`, `chunks_section.jsonl` |
 | Embedding | `.venv/bin/python -m embedding.embed` | `embeddings.jsonl` |
+| Storage | `.venv/bin/python -m storage.ingest_chroma` (`--reset` to rebuild) | `data/chroma/` |
+| Retrieval (brute force) | `.venv/bin/python -m retrieval.retrieve "your question"` | (prints the top-k chunks) |
+| Retrieval (Chroma) | `.venv/bin/python -m retrieval.chroma_retrieve "your question"` | (prints the top-k chunks) |
 
 Cleaning has no separate command: `extraction.extract` applies
 `cleaning.text_cleaning.clean_text()` to each page, because the cleaner's input
@@ -90,6 +95,19 @@ exists during extraction.
 
 .venv/bin/python -m embedding.inspect --id section-byom-allowance-005
 .venv/bin/python -m embedding.inspect --demo                         # cosine similarity: related vs unrelated
+
+.venv/bin/python -m retrieval.retrieve "What is the monthly allowance for a used MacBook Pro M3?"
+.venv/bin/python -m retrieval.retrieve "night support allowance" --top-k 3 --all   # + every chunk's score
+.venv/bin/python -m retrieval.retrieve "night support allowance" --method euclidean
+.venv/bin/python -m retrieval.retrieve "night support allowance" --method both     # one query embedding, both methods
+.venv/bin/python -m retrieval.retrieve                               # interactive
+.venv/bin/python -m retrieval.chroma_retrieve "night support allowance" --top-k 3  # through Chroma
+```
+
+## Tests
+
+```bash
+.venv/bin/python -m unittest discover tests -v
 ```
 
 `--doc` and `--section` match any part of the name, case-insensitively.
@@ -115,6 +133,17 @@ exists during extraction.
   The fixed and recursive outputs are kept for demonstrations.
 - **`embedding_text`** = `<document (title)> > <section breadcrumb>` + the chunk text,
   so every chunk still says which policy it belongs to when embedded on its own.
+- **Brute-force retrieval** embeds only the question and computes one cosine
+  similarity per stored chunk (39 today), then sorts. Simple and exact, but the
+  work grows linearly with the number of chunks; that is what a vector index improves.
+- **Cosine vs Euclidean:** cosine similarity (higher = closer) and Euclidean distance
+  (lower = closer) are both available. Because all-MiniLM-L6-v2 vectors have length 1,
+  distance = sqrt(2 - 2 x cosine), so both methods produce the same ranking here.
+- **Chroma** stores the existing vectors (no re-embedding) with `embedding_function=None`,
+  so it never embeds text with a model of its own; the question is embedded by our model
+  and passed as a vector. The collection uses cosine *distance* (1 - cosine similarity,
+  lower = closer). With only 39 chunks Chroma is not faster than brute force; both return
+  the same ranking.
 - **Model input limit:** all-MiniLM-L6-v2 reads 256 tokens; 3 of the 39 section
   chunks are longer and their tail is not represented in the vector
   (`embedding.embed` lists exactly what is cut).

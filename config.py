@@ -20,6 +20,7 @@ RAW_PAGES_FILE = PROCESSED_DIR / "raw_pages.jsonl"  # extraction: untouched PyMu
 DOCUMENTS_FILE = PROCESSED_DIR / "documents.json"  # extraction: document-level metadata
 PAGES_FILE = PROCESSED_DIR / "pages.jsonl"  # extraction + cleaning: cleaned, one record per page
 EMBEDDINGS_FILE = PROCESSED_DIR / "embeddings.jsonl"  # embedding: vectors + chunk metadata
+CHROMA_DIR = PROJECT_ROOT / "data" / "chroma"  # storage: persistent Chroma vector database
 
 
 def chunks_file(strategy: str) -> Path:
@@ -73,3 +74,14 @@ PRIMARY_CHUNKS_FILE = chunks_file(PRIMARY_STRATEGY)
 EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 EMBEDDING_DIM = 384  # what EMBEDDING_MODEL produces; embedding.embed checks it against the model
 EMBEDDING_BATCH_SIZE = 16
+
+# ---------------------------------------------------------------------------
+# Retrieval
+# ---------------------------------------------------------------------------
+TOP_K = 5  # default number of chunks returned per question
+
+# ---------------------------------------------------------------------------
+# Storage (Chroma vector database)
+# ---------------------------------------------------------------------------
+CHROMA_COLLECTION = "company_chunks"
+CHROMA_SPACE = "cosine"  # Chroma's distance for this collection: 1 - cosine similarity

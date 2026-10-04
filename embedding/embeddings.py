@@ -57,3 +57,12 @@ def token_info(model: SentenceTransformer, text: str) -> TokenInfo:
 def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
     """cos(angle) = (a . b) / (|a| * |b|). 1.0 = same direction, 0 = unrelated."""
     return float(np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)))
+
+
+def euclidean_distance(a: np.ndarray, b: np.ndarray) -> float:
+    """Straight-line distance: sqrt((a1-b1)^2 + (a2-b2)^2 + ...). 0 = identical, lower = closer.
+
+    For vectors of length 1 (like ours) it follows directly from cosine:
+    distance = sqrt(2 - 2 * cosine_similarity), so both rank chunks in the same order.
+    """
+    return float(np.sqrt(np.sum((a - b) ** 2)))
